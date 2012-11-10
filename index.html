@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>AsterGalactic</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+		<script src="js/main.js"></script>
+	</head>
+	<body>
+		<div id="loader_view">
+			Loading...
+		</div>
+		<div id="errors_view" style="display: none;">
+			An error occurred.
+		</div>
+		<div id="player_popup" style="display: none;">
+			<label>Name      :</label><span data-source="player.name"></span>
+			<label>Species   :</label><span data-source="player.species"></span>
+			<label>Guild     :</label><span data-source="player.guild"></span>
+			<label>Credits   :</label><span data-source="player.credits"></span>
+			<label>Systems   :</label><span data-source="player.count"></span>
+			<label>Resources :</label><span data-source="player.resources"></span>
+			<label>Land Area :</label><span data-source="player.area"></span>
+			<label>Military  :</label><span data-source="player.military"></span>
+			<label>Research  :</label><span data-source="player.research"></span>
+		</div>
+		<div id="galaxy_view" style="display: none;">
+			<map name="galaxy_map">
+				<area shape="rect" coords="0,0,100,100" title="Sector 1" />
+				<area shape="rect" coords="0,100,100,200" title="Sector 2" />
+				<area shape="rect" coords="100,0,200,100" title="Sector 3" />
+				<area shape="rect" coords="100,100,200,200" title="Sector 4" />
+			</map>
+			<canvas id="galaxy_canvas"></canvas>
+			<img usemap="#galaxy_map" src="images/galaxy.jpg" />
+		</div>
+		<div id="sector_view" style="display: none;">
+			<map name="sector_map">
+				<area shape="circle" coords="300,300,25" title="Sol" />
+				<area shape="circle" coords="100,300,25" title="Alpha Centauri" />
+				<area shape="circle" coords="300,100,25" title="Polaris" />
+				<area shape="circle" coords="300,200,10" title="Gendou's Fleet" />
+			</map>
+			<canvas id="sector_canvas"></canvas>
+			<img usemap="#sector_map" src="images/transparent.gif" />
+		</div>
+		<div id="system_view" style="display: none;">
+			<map name="system_map">
+				<area shape="circle" coords="300,300,25" title="Sol" />
+				<area shape="circle" coords="100,300,25" title="Earth" />
+				<area shape="circle" coords="300,100,25" title="Mars" />
+				<area shape="circle" coords="300,200,10" title="Gendou's Ship" />
+			</map>
+			<canvas id="system_canvas"></canvas>
+			<img usemap="#system_map" src="images/transparent.gif" />
+		</div>
+		<div id="object_view" style="display: none;">
+			<map name="object_map">
+				<area shape="poly" coords="" title="Oar Extractor" />
+				<area shape="poly" coords="" title="Gas Extractor" />
+				<area shape="poly" coords="" title="Solar Array" />
+			</map>
+			<canvas id="object_canvas"></canvas>
+			<img usemap="#object_map" src="images/earth.gif" />
+		</div>
+	</body>
+</html> 
