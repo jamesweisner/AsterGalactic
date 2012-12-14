@@ -49,21 +49,42 @@ function change_view(view)
 			});
 			break;
 		default:
-			console.log("Cannot change_view() to: " + view);
+			console.log('Cannot change_view() to: ' + view);
 	}
 	view_mode = view;
+}
+
+function remap_galaxy()
+{
+	var shapesLayer = new Kinetic.Layer();
+	for(sector in galaxy)
+	{
+		new_sector = new Kinetic.Rect({
+			'x':      sector.coords[0],
+			'y':      sector.coords[1],
+			'width':  sector.coords[2],
+			'height': sector.coords[3]
+		});
+		new_sector.on('mouseover', function() {	show_sector_info(sector.id); });
+		new_sector.on('mouseout', function() { hide_sector_info(); });
+		shapesLayer.add(new_sector);
+	}
+	var canvas = $("#galaxy_canvas")[0].getContext("2d");
+	canvas.fillStyle = "#FF0000";
+	canvas.fillRect(0,0,150,75);
 }
 
 $(document).ready(function()
 {
 	$.ajax({
-		"url": "js/galaxy.js",
-		"dataType": "json",
-		"success": function(response)
+		'url': 'js/galaxy.js',
+		'dataType': 'json',
+		'success': function(response)
 		{
 			galaxy = response.galaxy;
+			remap_galaxy();
 			change_view('galaxy');
 		},
-		"error": function() { change_view('errors'); }
+		'error': function() { change_view('errors'); }
 	});
 });
