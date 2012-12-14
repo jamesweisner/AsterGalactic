@@ -1,0 +1,60 @@
+Protocol Introduction
+---------------------
+
+All traffic is sent as JSON objects, called packets, over a web socket.
+Each packet must have the a property called type.
+This is a string containing the name of the callback function used to handle the packet.
+All other properties in the packet are passed as named arguments to this function.
+The server should expect to see the following packet types:
+
+	login(string session_id)
+	loadGalaxy()
+	loadSector(int sector_id)
+	loadSystem(int system_id)
+	loadObject(int object_id)
+	sendFleet(int source_system_id, int destination_system_id)
+	sendShip(int ship_id, int destination_object_id)
+	buildShip(int object_id, int ship_class)
+	fleetShip(int ship_id, boolean in_fleet)
+	cancelSendShip(int ship_id)
+	cancelBuildShip(int ship_id)
+	recycleShip(int ship_id)
+	buildStructure(int object_id, int structure_class)
+	cancelStructure(int structure_id)
+	recycleStructure(int structure_id)
+	upgradeStructure(int structure_id, int upgrade_id)
+	research(technology_id)
+
+The client should expect to see the following packet types:
+
+	login(string status, struct account)
+	updateGalaxy(struct galaxy)
+	updateSector(struct sector)
+	updateSystem(struct system)
+	updateObject(struct object)
+	updateFleet(struct fleet)
+	updateShip(struct ship)
+	updateStructure(struct structure)
+	updateResearch(struct research)
+
+The action can be insert, update, or delete.
+The 2nd argument for each of these update packets contains a ID property.
+This ID is used to match the entity to be updated.
+
+Packets also have a property called sequence.
+Packets that originate on the client send the sequence to the server.
+Packets in response to a given packet contain that packet's sequence number.
+This way, the client can ignore response to obviated requests.
+If, for example, the galaxy is loaded, you'll get many sector updates.
+You don't know when it's done, so the UI should show fog over sectors until they come in.
+Notice that these sector updates won't have system or fleet details, just demographics.
+Later, when you enter a system, you get back one sector update and many system updates.
+Those systems only have demographics, in turn, until you enter one, and it's objects are loaded, etc.
+
+Load and update packets also have a time property, used to minimize load.
+Only properties that have changed since the load times tamp are sent.
+For this reason, only the specified properties are changed in the client.
+The rest of the old values persist.
+That means entity property structure should be as flat as possible.
+However, things which tend to only update together should be grouped.
+For example, X and Y are grouped under position.

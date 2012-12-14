@@ -38,7 +38,7 @@
 		"stars": { "count": 5, "resources": 200, "area": 100 }
 	},
 	{
-		"coords": [ 100 ,100, 200, 200 ],
+		"coords": [ 100, 100, 200, 200 ],
 		"players": [],
 		"stars": { "count": 10, "resources": 100, "area": 100 }
 	}
