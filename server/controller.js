@@ -4,44 +4,50 @@ exports.handler = function(socket)
 	{
 		// TODO send player goes offline to others?
 	});
-	socket.on('loginRequest', function(username, password)
+	socket.on('login', function(username, password)
 	{
 		var message = 'success';
-		var player = new Player(); // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/create
-		if(!(username in AsterGalactic.players))
+		var player = false;
+		if(!(username in players))
 			message = 'Player does not exist';
-		else if(AsterGalactic.players[username].password != password)
+		else if(players[username].password != password)
 			message = 'Password incorrect.';
 		else
 		{
-			player = AsterGalactic.players[username];
-			// TODO what if the player is already online?
-			// TODO whould we inform others that this player has come online?
+			player = players[username];
+			// TODO what if the player is already online? kick out the ghost?
+			// TODO should we inform others that this player has come online?
 			socket.player = player;
 		}
-		socket.emit('loginResponse', {
+		socket.emit('login', {
 			'message': message,
-			'player': player.loginResponse()
+			'player': view.login(player)
 		});
 		
-		socket.on('loadGalaxy', function(sequence, cache_time)
+		socket.on('enterGalaxy', function(sequence, cacheTime)
 		{
-			var server_time = +new Date;
-			socket.emit('updateGalaxy', AsterGalactic.galaxy.updateGalaxy());
+			var serverTime = +new Date;
+			socket.emit('enterGalaxy', view.enterGalaxy(galaxy));
 			for(var i = 0; i < AsterGalactic.sectors.length; i++)
 			{
 				var sector = AsterGalactic.sectors[i];
-				if(sector.time < cache_time) continue; // Cache is still good.
 				socket.emit('updateSector', {
-					"sequence": sequence,
-					"time": server_time,
-					"sector": sector.changes_since(cache_time) // TODO implement sector.changes_since
+					'sequence': sequence,
+					'time': serverTime,
+					'sector': sector.updateSector(cacheTime)
 				});
 			}
 		});
-		socket.on('loadSector', function(sectorId)
+		socket.on('scanSector', function(sequence, cacheTime, sectorId)
 		{
-			var server_time = +new Date;
+			var serverTime = +new Date;
+			if(!(sectorId in galaxy.sectors))
+				return socket.emit('error', { 'message': 'Sector not found.', 'args': [ 'scanSector', cacheTime, sectorId ] });
+			socket.emit('scanSector', {
+				'sequence': sequence,
+				'time': serverTime,
+				'system': system.updateSystem(cacheTime) 
+			});
 		});
 		socket.on('loadSystem', function(systemId)
 		{
@@ -52,6 +58,10 @@ exports.handler = function(socket)
 			
 		});
 		socket.on('sendFleet', function(originSystemId, destinationSystemId)
+		{
+			
+		});
+		socket.on('cancelSendFleet', function(fleetId)
 		{
 			
 		});
@@ -79,7 +89,7 @@ exports.handler = function(socket)
 		{
 			
 		});
-		socket.on('fleetShip', function(shipId, inFleet)
+		socket.on('toggleInFleet', function(shipId, inFleet)
 		{
 			
 		});

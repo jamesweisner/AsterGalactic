@@ -1,4 +1,4 @@
-function Player()
+function AGPlayer()
 {
 	this.id = 0;
 	this.username = '';
@@ -11,7 +11,7 @@ function Player()
 	};
 };
 
-Player.prototype.loginResponse = function()
+AGPlayer.prototype.loginResponse = function()
 {
 	if(this.id === 0) return {};
 	return this;

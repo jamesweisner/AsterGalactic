@@ -1,4 +1,4 @@
-function Galaxy()
+function AGGalaxy()
 {
 	this.id = 0;
 	this.name = '';
@@ -8,7 +8,7 @@ function Galaxy()
 	this.num_guilds = 0;
 };
 
-Galaxy.prototype.updateGalaxy = function()
+AGGalaxy.prototype.updateGalaxy = function()
 {
 	if(this.id === 0) return {};
 	return this;

@@ -1,9 +1,8 @@
 To Do List
 ==========
 
-Make server protocol into a directory 
+finish server controller, model, and view
 
-	http://nodejs.org/api/modules.html#modules_folders_as_modules
+Server-side logging?
 
-Each file is one packet type.
-
+Achievements!!!
