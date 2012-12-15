@@ -1,0 +1,40 @@
+exports = {
+	"id": 1,
+	"location": { "top": 0, "left": 0 },
+	"size": { "width": 100, "height": 100 },
+	"stars_info": {
+		"count": 1,
+		"resources": 100,
+		"area": 200
+	},
+	"player_info": {
+		"systems": 2,
+		"resources": { "owned": 115, "rate": 5, "remaining": 51436 },
+		"area": {
+			"used": { "ground": 145, "orbit": 22 },
+			"unused": { "ground": 512, "orbit": 432 }
+		},
+		"military": { "attack": 23, "defense": 33 },
+		"population": 1
+	},
+	"guild_info": {
+		"systems": 2,
+		"resources": { "owned": 115, "rate": 5, "remaining": 51436 },
+		"area": {
+			"used": { "ground": 145, "orbit": 22 },
+			"unused": { "ground": 512, "orbit": 432 }
+		},
+		"military": { "attack": 23, "defense": 33 },
+		"population": 1
+	},
+	"other_info": {
+		"systems": 2,
+		"resources": { "owned": 115, "rate": 5, "remaining": 51436 },
+		"area": {
+			"used": { "ground": 145, "orbit": 22 },
+			"unused": { "ground": 512, "orbit": 432 }
+		},
+		"military": { "attack": 23, "defense": 33 },
+		"population": 1
+	}
+};

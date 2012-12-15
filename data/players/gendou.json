@@ -1,0 +1,13 @@
+AsterGalactic.players["gendou"] = {
+	"id": 1,
+	"username": "Gendou",
+	"credits": 9001,
+	"research": {
+		"pool": {
+			"value": 50,
+			"time": 123456789
+		},
+		"population": 1,
+		"finished": [1, 3, 5, 7, 11]
+	}
+};

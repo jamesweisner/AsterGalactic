@@ -1,0 +1,9 @@
+AsterGalactic.galaxy = {
+	"name": "Milky Way",
+	"sectors_info": {
+		"count": 1,
+		"players": 1,
+		"stars": 1,
+		"guilds": 1
+	}
+};
