@@ -22,6 +22,12 @@ exports.loadGuilds = function()
 exports.loadGalaxy = function()
 {
 	var galaxy = requie(galaxy.json);
+	if(typeof(galaxy.port) != 'number') galaxy.port = 80;
+	galaxy.sectors = [];
+	galaxy.systems = [];
+	galaxy.fleets = [];
+	galaxy.planets = [];
+	galaxy.machines = [];
 	
 	var sectorFiles = fs.readdirSync(__dirname + '../data/sectors');
 	for(int i = 0; i < sectorFiles.length; i++)
@@ -48,6 +54,8 @@ exports.loadGalaxy = function()
 		}
 		var system = require(__dirname + '../data/systems' + file);
 		glaaxy.sectors[system.sectorId].systems[system.id] = system;
+		galaxy.systems[system.id] = system;
+		// TODO load fleets, planets, machines
 		system.sector = galaxy.sectors[system.sectorId];
 		delete system.sectorId;
 		// TODO replace usernames with user references (in machines, for example)

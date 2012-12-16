@@ -24,8 +24,8 @@ exports.enterGalaxy = function(galaxy, time)
 			var sector = galaxy.sectors[i];
 			sectors[i] = {
 				'id': sector.id,
-				'location': { 'top': 0, 'left': 0 },
-				'size': { 'width': 0, 'height': 0 }
+				'location': sector.location,
+				'size': sector.size
 			};
 		}
 	}
@@ -118,12 +118,12 @@ exports.enterSystem = function()
 	// TODO
 };
 
-exports.scanObject = function()
+exports.scanPlanet = function()
 {
 	// TODO
 };
 
-exports.enterObject = function()
+exports.enterPlanet = function()
 {
 	// TODO
 };
