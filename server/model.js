@@ -7,16 +7,44 @@ exports.loadPlayers = function()
 		var file = files[i];
 		if(!file.match(/^[A-Z\d_]+\.json$/i))
 		{
-			// TODO log error
+			util.log('Bad player file name: ' + file);
 			continue;
 		}
-		players[file.substr(0, file.length - 4)] = require(__dirname + '../data/players' + file);
+		var player = require(__dirname + '../data/players' + file);
+		if(player.username != file.substr(0, file.length - 4))
+		{
+			util.log('Player file name does not agree with contents: ' + file);
+			continue;
+		}
+		players[player.username] = player;
 	}
 };
 
 exports.loadGuilds = function()
 {
-	// TODO load guilds, resolve player references
+	var guilds = {};
+	var files = fs.readdirSync(__dirname + '../data/guilds');
+	for(int i = 0; i < files.length; i++)
+	{
+		var file = files[i];
+		if(!file.match(/^[\d]+\.json$/i))
+		{
+			util.log('Bad guild file name: ' + file);
+			continue;
+		}
+		guild = require(__dirname + '../data/guilds' + file);
+		if(guild.id != parseInt(file))
+		{
+			util.log('Guild file name does not agree with contents: ' + file);
+			continue;
+		}
+		guilds[guild.id] = guild;
+		for(username in guild.players)
+		{
+			guild.members[username] = players[username];
+		}
+	}
+	return guilds;
 };
 
 exports.loadGalaxy = function()
@@ -35,10 +63,17 @@ exports.loadGalaxy = function()
 		var file = sectorFiles[i];
 		if(!file.match(/^[\d]+\.json$/i))
 		{
-			// TODO log error
+			util.log('Bad sector file name: ' + file);
 			continue;
 		}
-		glaaxy.sectors[parseInt(file)] = require(__dirname + '../data/sectors' + file);
+		var sector = require(__dirname + '../data/sectors' + file);
+		if(sector.id != parseInt(file)))
+		{
+			util.log('Sector file name does not agree with contents: ' + file);
+			continue;
+		}
+		glaaxy.sectors[sector.id] = sector;
+		
 		// TODO replace usernames with user references (in fleets, for example)
 		// TODO resolve any guild references, too
 	}
@@ -49,15 +84,21 @@ exports.loadGalaxy = function()
 		var file = systemFiles[i];
 		if(!file.match(/^[\d]+\.json$/i))
 		{
-			// TODO log error
+			util.log('Bad system file name: ' + file);
 			continue;
 		}
 		var system = require(__dirname + '../data/systems' + file);
+		if(system.id != parseInt(file)))
+		{
+			util.log('System file name does not agree with contents: ' + file);
+			continue;
+		}
 		glaaxy.sectors[system.sectorId].systems[system.id] = system;
 		galaxy.systems[system.id] = system;
-		// TODO load fleets, planets, machines
 		system.sector = galaxy.sectors[system.sectorId];
 		delete system.sectorId;
+		
+		// TODO load fleets, planets, machines
 		// TODO replace usernames with user references (in machines, for example)
 		// TODO resolve any guild references, too
 	}

@@ -160,7 +160,22 @@ exports.handler = function(socket)
 		socket.on('upgradeMachine', function(machineId, upgradeId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			// TODO
+			if('TODO') return sendError(socket, 'Machine not found.');
+			var machine = 'TODO';
+			if('TODO') return sendError(socket, 'You do not own that machine.');
+			if('TODO') return sendError(socket, 'Upgrade not available.');
+			if('TODO') return sendError(socket, 'Resources not available.');
+			model.upgradeMachine(machine, upgradeId);
+			socket.emit('upgradeMachine', {
+				'sequence': sequence,
+				'time': +new Date,
+				'machine': view.upgradeMachine(machine, upgradeId)
+			});
+		});
+		socket.on('cancelUpgradeMachine', function(machineId)
+		{
+			if(!socket.player) return sendError(socket, 'Please login.');
+			
 		});
 		socket.on('sendShip', function(shipId, destinationPlanetId)
 		{
@@ -170,7 +185,7 @@ exports.handler = function(socket)
 		socket.on('cancelSendShip', function(machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			// TODO
+			// TODO calculate how long it will take to come back
 		});
 		socket.on('setEnlisted', function(shipId, enlisted)
 		{
