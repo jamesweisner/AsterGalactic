@@ -73,7 +73,7 @@ exports.enterSector = function(sector, time)
 			'id': system.id,
 			'name': system.name,
 			'type': system.type,
-			'location': system.location,
+			'location': system.location
 		};
 	}
 	response.fleets = [];
@@ -87,7 +87,7 @@ exports.enterSector = function(sector, time)
 			'origin': fleet.origin,
 			'destination': fleet.destination,
 			'speed': fleet.speed,
-			'timeSent': fleet.timeSent,
+			'timeSent': fleet.timeSent
 		};
 	}
 	return response;

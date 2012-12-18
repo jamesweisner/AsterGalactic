@@ -1,7 +1,41 @@
+var util = require('util'); // http://nodejs.org/api/all.html#all_util
+var fs   = require('fs');   // http://nodejs.org/api/all.html#all_file_system
+
+exports.galaxy   = {};
+exports.players  = {};
+exports.guilds   = {};
+exports.sectors  = {};
+exports.systems  = {};
+exports.fleets   = {};
+exports.planets  = {};
+exports.machines = {};
+
+exports.num_players = 0;
+exports.num_guilds  = 0;
+exports.num_sectors = 0;
+exports.num_systems = 0;
+
+exports.loadGalaxy = function()
+{
+	try
+	{
+		exports.galaxy = require(__dirname + '/../data/galaxy.json');
+	}
+	catch (e)
+	{
+		util.log('Failed to load galaxy file: galaxy.json');
+		process.exit(1);
+	}
+	if(typeof(exports.galaxy.port) != 'number')
+	{
+		util.log('Listen port not specified, using default port: 80');
+		exports.galaxy.port = 80;
+	}
+}
+
 exports.loadPlayers = function()
 {
-	var players = {};
-	var files = fs.readdirSync(__dirname + '../data/players');
+	var files = fs.readdirSync(__dirname + '/../data/players/');
 	for(var i = 0; i < files.length; i++)
 	{
 		var file = files[i];
@@ -10,20 +44,28 @@ exports.loadPlayers = function()
 			util.log('Bad player file name: ' + file);
 			continue;
 		}
-		var player = require(__dirname + '../data/players' + file);
-		if(player.username != file.substr(0, file.length - 4))
+		try
+		{
+			var player = require(__dirname + '/../data/players/' + file);
+		}
+		catch (e)
+		{
+			util.log('Failed to load player file: ' + file);
+			continue;
+		}
+		if(player.username != file.substr(0, file.length - 5))
 		{
 			util.log('Player file name does not agree with contents: ' + file);
 			continue;
 		}
-		players[player.username] = player;
+		exports.players[player.username] = player;
+		exports.num_players++;
 	}
 };
 
 exports.loadGuilds = function()
 {
-	var guilds = {};
-	var files = fs.readdirSync(__dirname + '../data/guilds');
+	var files = fs.readdirSync(__dirname + '/../data/guilds/');
 	for(var i = 0; i < files.length; i++)
 	{
 		var file = files[i];
@@ -32,70 +74,100 @@ exports.loadGuilds = function()
 			util.log('Bad guild file name: ' + file);
 			continue;
 		}
-		guild = require(__dirname + '../data/guilds' + file);
-		if(guild.id != parseInt(file))
+		try
+		{
+			guild = require(__dirname + '/../data/guilds/' + file);
+		}
+		catch (e)
+		{
+			util.log('Failed to load guild file: ' + file);
+			continue;
+		}
+		if(guild.id != file.substr(0, file.length - 5))
 		{
 			util.log('Guild file name does not agree with contents: ' + file);
 			continue;
 		}
-		guilds[guild.id] = guild;
-		for(username in guild.players)
+		exports.guilds[guild.id] = guild;
+		exports.num_guilds++;
+		
+		// Resolve references.
+		for(username in guild.members)
 		{
 			guild.members[username] = players[username];
 		}
 	}
-	return guilds;
 };
 
-exports.loadGalaxy = function()
+exports.loadSectors = function()
 {
-	var galaxy = requie(galaxy.json);
-	if(typeof(galaxy.port) != 'number') galaxy.port = 80;
-	galaxy.sectors = [];
-	galaxy.systems = [];
-	galaxy.fleets = [];
-	galaxy.planets = [];
-	galaxy.machines = [];
-	
-	var sectorFiles = fs.readdirSync(__dirname + '../data/sectors');
-	for(var i = 0; i < sectorFiles.length; i++)
+	var files = fs.readdirSync(__dirname + '/../data/sectors/');
+	for(var i = 0; i < files.length; i++)
 	{
-		var file = sectorFiles[i];
+		var file = files[i];
 		if(!file.match(/^[\d]+\.json$/i))
 		{
 			util.log('Bad sector file name: ' + file);
 			continue;
 		}
-		var sector = require(__dirname + '../data/sectors' + file);
-		if(sector.id != parseInt(file))
+		try
+		{
+			var sector = require(__dirname + '/../data/sectors/' + file);
+		}
+		catch (e)
+		{
+			util.log('Failed to load sector file: ' + file);
+			continue;
+		}
+		if(sector.id != file.substr(0, file.length - 5))
 		{
 			util.log('Sector file name does not agree with contents: ' + file);
 			continue;
 		}
-		glaaxy.sectors[sector.id] = sector;
+		exports.sectors[sector.id] = sector;
+		exports.num_sectors++;
 		
+		// Resolve references.
 		// TODO replace usernames with user references (in fleets, for example)
 		// TODO resolve any guild references, too
 	}
-	
-	var systemFiles = fs.readdirSync(__dirname + '../data/systems');
-	for(var i = 0; i < systemFiles.length; i++)
+};
+
+exports.loadSystems = function()
+{
+	var files = fs.readdirSync(__dirname + '/../data/systems/');
+	for(var i = 0; i < files.length; i++)
 	{
-		var file = systemFiles[i];
+		var file = files[i];
 		if(!file.match(/^[\d]+\.json$/i))
 		{
 			util.log('Bad system file name: ' + file);
 			continue;
 		}
-		var system = require(__dirname + '../data/systems' + file);
-		if(system.id != parseInt(file))
+		try
+		{
+			var system = require(__dirname + '/../data/systems/' + file);
+		}
+		catch (e)
+		{
+			util.log('Failed to load system file: ' + file);
+			continue;
+		}
+		if(system.id != file.substr(0, file.length - 5))
 		{
 			util.log('System file name does not agree with contents: ' + file);
 			continue;
 		}
-		glaaxy.sectors[system.sectorId].systems[system.id] = system;
-		galaxy.systems[system.id] = system;
-		system.sector = galaxy.sectors[system.sectorId];
+		exports.systems[system.id] = system;
+		exports.num_systems++;
+		
+		// Resolve references.
+		if(!(system.sectorId in exports.sectors))
+		{
+			util.log('Could not find sector with ID: ' + system.sectorId);
+		}
+		system.sector = exports.sectors[system.sectorId];
+		system.sector.systems[system.id] = system;
 		delete system.sectorId;
 		
 		// TODO load fleets, planets, machines
