@@ -2,7 +2,7 @@ exports.loadPlayers = function()
 {
 	var players = {};
 	var files = fs.readdirSync(__dirname + '../data/players');
-	for(int i = 0; i < files.length; i++)
+	for(var i = 0; i < files.length; i++)
 	{
 		var file = files[i];
 		if(!file.match(/^[A-Z\d_]+\.json$/i))
@@ -24,7 +24,7 @@ exports.loadGuilds = function()
 {
 	var guilds = {};
 	var files = fs.readdirSync(__dirname + '../data/guilds');
-	for(int i = 0; i < files.length; i++)
+	for(var i = 0; i < files.length; i++)
 	{
 		var file = files[i];
 		if(!file.match(/^[\d]+\.json$/i))
@@ -58,7 +58,7 @@ exports.loadGalaxy = function()
 	galaxy.machines = [];
 	
 	var sectorFiles = fs.readdirSync(__dirname + '../data/sectors');
-	for(int i = 0; i < sectorFiles.length; i++)
+	for(var i = 0; i < sectorFiles.length; i++)
 	{
 		var file = sectorFiles[i];
 		if(!file.match(/^[\d]+\.json$/i))
@@ -67,7 +67,7 @@ exports.loadGalaxy = function()
 			continue;
 		}
 		var sector = require(__dirname + '../data/sectors' + file);
-		if(sector.id != parseInt(file)))
+		if(sector.id != parseInt(file))
 		{
 			util.log('Sector file name does not agree with contents: ' + file);
 			continue;
@@ -79,7 +79,7 @@ exports.loadGalaxy = function()
 	}
 	
 	var systemFiles = fs.readdirSync(__dirname + '../data/systems');
-	for(int i = 0; i < systemFiles.length; i++)
+	for(var i = 0; i < systemFiles.length; i++)
 	{
 		var file = systemFiles[i];
 		if(!file.match(/^[\d]+\.json$/i))
@@ -88,7 +88,7 @@ exports.loadGalaxy = function()
 			continue;
 		}
 		var system = require(__dirname + '../data/systems' + file);
-		if(system.id != parseInt(file)))
+		if(system.id != parseInt(file))
 		{
 			util.log('System file name does not agree with contents: ' + file);
 			continue;
@@ -151,7 +151,7 @@ exports.upgradeMachine = function()
 	// TODO 
 };
 
-exports.sendShip = function()
+exports.sendShip = function(machine, planet)
 {
 	// TODO 
 };
@@ -161,17 +161,23 @@ exports.cancelSendShip = function()
 	// TODO 
 };
 
-exports.toggleInFleet = function()
+exports.toggleInFleet = function(machine, enlisted)
 {
-	// TODO 
+	machine.enlisted = enlisted;
 };
 
-exports.research = function()
+exports.research = function(player, technologyId)
 {
-	// TODO 
+	var time = +new Date;
+	var technology = technologies[researchId];
+	player.research.pool += player.research.rate * (time - player.research.time);
+	player.research.pool -= technology.cost;
+	player.research.time = time;
+	player.technologies[technologyId] = technology;
+	// TODO any special-case things to do for certain technologies?
 };
 
-export.fleetArrives = function()
+exports.fleetArrives = function()
 {
 	// TODO 
 };

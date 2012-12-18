@@ -19,7 +19,7 @@ exports.enterGalaxy = function(galaxy, time)
 	var sectors = [];
 	if(time > 0)
 	{
-		for(int i = 0; i < galaxy.sectors.length; i++)
+		for(var i = 0; i < galaxy.sectors.length; i++)
 		{
 			var sector = galaxy.sectors[i];
 			sectors[i] = {
@@ -65,7 +65,7 @@ exports.enterSector = function(sector, time)
 	if(sector.guildInfo.time  >= time) response.guildInfo  = sector.guildInfo;
 	if(sector.otherInfo.time  >= time) response.otherInfo  = sector.otherInfo;
 	response.systems = [];
-	for(int i = 0; i < sector.systems.length; i++)
+	for(var i = 0; i < sector.systems.length; i++)
 	{
 		var system = sector.systems[i];
 		if(system.time < time) continue;
@@ -77,7 +77,7 @@ exports.enterSector = function(sector, time)
 		};
 	}
 	response.fleets = [];
-	for(int i = 0; i < sector.fleets.length; i++)
+	for(var i = 0; i < sector.fleets.length; i++)
 	{
 		var fleet = sector.fleets[i];
 		if(fleet.time < time) continue;

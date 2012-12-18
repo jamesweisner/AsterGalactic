@@ -51,7 +51,8 @@ exports.handler = function(socket)
 				'sequence': sequence,
 				'time': +new Date,
 				'galaxy': view.enterGalaxy(galaxy, time)
-			);
+			});
+			return true;
 		});
 		socket.on('scanSector', function(sequence, sectorId, time)
 		{
@@ -62,6 +63,7 @@ exports.handler = function(socket)
 				'time': +new Date,
 				'sector': view.scanSector(galaxy.sectors[sectorId], time)
 			});
+			return true;
 		});
 		socket.on('enterSector', function(sequence, sectorId, time)
 		{
@@ -74,6 +76,7 @@ exports.handler = function(socket)
 				'time': +new Date,
 				'sector': view.enterSector(sector, time)
 			});
+			return true;
 		});
 		socket.on('scanSystem', function(sequence, systemId, time)
 		{
@@ -82,8 +85,9 @@ exports.handler = function(socket)
 			socket.emit('scanSystem', {
 				'sequence': sequence,
 				'time': +new Date,
-				'system': view.scanSystem(galaxy.systems[systemId], time);
+				'system': view.scanSystem(galaxy.systems[systemId], time)
 			});
+			return true;
 		});
 		socket.on('enterSystem', function(sequence, systemId, time)
 		{
@@ -94,8 +98,9 @@ exports.handler = function(socket)
 			socket.emit('enterSystem', {
 				'sequence': sequence,
 				'time': +new Date,
-				'system': view.scanSystem(system, time);
+				'system': view.scanSystem(system, time)
 			});
+			return true;
 		});
 		socket.on('scanPlanet', function(sequence, planetId, time)
 		{
@@ -104,8 +109,9 @@ exports.handler = function(socket)
 			socket.emit('scanPlanet', {
 				'sequence': sequence,
 				'time': +new Date,
-				'planet': view.scanPlanet(galaxy.planets[planetId], time);
+				'planet': view.scanPlanet(galaxy.planets[planetId], time)
 			});
+			return true;
 		});
 		socket.on('enterPlanet', function(sequence, planetId, time)
 		{
@@ -116,8 +122,9 @@ exports.handler = function(socket)
 			socket.emit('enterPlanet', {
 				'sequence': sequence,
 				'time': +new Date,
-				'planet': view.enterPlanet(planet, time);
+				'planet': view.enterPlanet(planet, time)
 			});
+			return true;
 		});
 		socket.on('sendFleet', function(sequence, originSystemId, destinationSystemId)
 		{
@@ -136,33 +143,63 @@ exports.handler = function(socket)
 				'time': +new Date,
 				'fleet': view.sendFleet(fleet)
 			});
+			return true;
 		});
 		socket.on('cancelSendFleet', function(fleetId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
 			// TODO
+			return true;
 		});
-		socket.on('buildMachine', function(planetId, machineId, hullId, engineId)
+		socket.on('buildMachine', function(machineId, machineClassId, hullClassId, engineClassId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
+			if(!(planetId in galaxy.planets)) return socketError(socket, 'Planet not found.');
+			if(!(machineClassId in machineClasses)) return socketError(socket, 'Machine class not found.');
+			if(!(hullClassId in hullClasses)) return socketError(socket, 'Hull class not found.');
+			if(!(engineClassId in engineClasses)) return socketError(socket, 'Engine class not found.');
+			if(!(machineId in galaxy.machines)) return socketError(socket, 'Construction facility not found.');
+			var facility = galaxy.machines[machineId];
+			if(facility.player.username != socket.player.username) return sendError(socket, 'You do not own this ship.');
+			var machine = {
+				'class': machineClasses[machineClassId],
+				'hull': hullClasses[hullClassId],
+				'engine': engineClasses[engineClassId]
+			};
+			var cost = model.addCosts([machine.class.cost, machine.hull.cost, machine.engine.cost ]);
+			if('TODO') return socketError(socket, 'Insufficient resources.');
+			if('TODO') return socketError(socket, 'Insufficient orbital or ground space.');
+			if('TODO') return socketError(socket, 'You lack the required technology.');
 			// TODO
+			return true;
 		});
 		socket.on('cancelBuildMachine', function(machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Machine not found.');
+			var machine = galaxy.machines[machineId];
+			if(machine.player.username != socket.player.username) return sendError(socket, 'You do not own this machine.');
+			if(machine.mode != 'building') return sendError(socket, 'Machine is not under construction.');
 			// TODO
+			return true;
 		});
 		socket.on('recycleMachine', function(machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Machine not found.');
+			var machine = galaxy.machines[machineId];
+			if(machine.player.username != socket.player.username) return sendError(socket, 'You do not own this machine.');
+			if(!(machine.mode in ['ready', 'building', 'upgrading'])) return sendError(socket, 'Machine is not ready to be recycled.');
 			// TODO
+			return true;
 		});
 		socket.on('upgradeMachine', function(machineId, upgradeId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			if('TODO') return sendError(socket, 'Machine not found.');
-			var machine = 'TODO';
-			if('TODO') return sendError(socket, 'You do not own that machine.');
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Machine not found.');
+			var machine = galaxy.machines[machineId];
+			if(machine.player.username != socket.player.username) return sendError(socket, 'You do not own this machine.');
+			if(machine.mode != 'ready') return sendError(socket, 'Machine is not ready to be upgraded.');
 			if('TODO') return sendError(socket, 'Upgrade not available.');
 			if('TODO') return sendError(socket, 'Resources not available.');
 			model.upgradeMachine(machine, upgradeId);
@@ -171,48 +208,73 @@ exports.handler = function(socket)
 				'time': +new Date,
 				'machine': view.upgradeMachine(machine, upgradeId)
 			});
+			return true;
 		});
 		socket.on('cancelUpgradeMachine', function(machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Machine not found.');
+			var machine = galaxy.machines[machineId];
+			if(machine.player.username != socket.player.username) return sendError(socket, 'You do not own this machine.');
+			if(machine.mode != 'ready') return sendError(socket, 'Machine is not being upgraded.');
+			// TODO
+			return true;
 		});
-		socket.on('sendShip', function(shipId, destinationPlanetId)
+		socket.on('sendShip', function(machineId, planetId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			// TODO
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Ship not found.');
+			var ship = galaxy.machines[machineId];
+			if(ship.type != 'ship') return sendError(socket, 'That machine is not a ship.');
+			if(ship.player.username != socket.player.username) return sendError(socket, 'You do not own this ship.');
+			if(ship.mode != 'ready') return sendError(socket, 'Ship is not ready to depart.');
+			if(!(planetId in galaxy.planets)) return sendError(socket, 'Destination planet not found.');
+			// TODO some destinations invalid? for some ship classes?
+			var planet = galaxy.planets[planetId];
+			model.sendShip(ship, planet);
+			return true;
 		});
 		socket.on('cancelSendShip', function(machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Ship not found.');
+			var ship = galaxy.machines[machineId];
+			if(ship.player.username != socket.player.username) return sendError(socket, 'You do not own this ship.');
+			if(ship.mode != 'underway') return sendError(socket, 'Ship is not underway');
 			// TODO calculate how long it will take to come back
+			return true;
 		});
-		socket.on('setEnlisted', function(shipId, enlisted)
+		socket.on('setEnlisted', function(machineId, enlisted)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
-			if(!(shipId in galaxy.ships)) return sendError(socket, 'Ship not found.');
-			var ship = galaxy.ships[shipId];
+			if(!(machineId in galaxy.machines)) return sendError(socket, 'Ship not found.');
+			var ship = galaxy.machines[machineId];
+			if(ship.type != 'ship') return sendError(socket, 'That machine is not a ship.');
 			if(ship.player.username != socket.player.username) return sendError(socket, 'You do not own this ship.');
-			if('TODO') return sendError(socket, 'Ship is still under construction.');
+			if(ship.mode != 'ready') return sendError(socket, 'Ship is not ready to depart.');
 			model.setEnlisted(ship, enlisted);
 			socket.emit('setEnlisted', {
 				'sequence': sequence,
 				'time': +new Date,
 				'ship': view.setEnlisted(ship)
 			});
+			return true;
 		});
 		socket.on('research', function(sequence, technologyId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
+			if(!(technologyId in technologies)) return socketError(socket, 'Technology not found.');
+			var technology = technologies[technologyId];
 			if('TODO') return sendError(socket, 'You have already researched this technology.');
 			if('TODO') return sendError(socket, 'Technology prerequisite not yet researched.');
 			if('TODO') return sendError(socket, 'Insufficient research points.');
-			model.research(player, technologyId);
+			model.research(player, technology);
 			socket.emit('research', {
 				'sequence': sequence,
-				'time': +new Date,
+				'time': player.research.time,
 				'technology': technologyId
 			});
+			return true;
 		});
 	});
 };
