@@ -213,24 +213,84 @@ exports.cancelBuildMachine = function()
 	// TODO 
 };
 
-exports.recycleMachine = function()
+exports.recycleMachine = function(machine)
 {
-	// TODO 
+	var time = +new Date;
+	var duration = 0;
+	switch(machine.mode)
+	{
+		case 'ready':
+			duration = machine.machineClass.buildTime;
+			break;
+		case 'building':
+			duration = time - machine.build.time;
+			break;
+		case 'upgrading':
+			duration = machine.machineClass.buildTime + (time - machine.upgrade.time);
+			break;
+	}
+	duration *= machine.player.stats.recycleMultiplier;
+	machine.mode = 'recycling';
+	machine.recycle = {
+		'time': time,
+		'duration': duration,
+		'timer': setTimeout(function(machine)
+		{
+			delete model.machines[machine.id];
+			// TODO delete all other references!!!
+		}, Math.floor(duration), machine)
+	};
 };
 
-exports.upgradeMachine = function()
+exports.upgradeMachine = function(machine, upgrade)
 {
-	// TODO 
+	var time = +new Date;
+	var duration = upgrade.buildTime * machine.player.stats.upgradeMultiplier;
+	machine.mode = 'upgrading';
+	machine.upgrade = {
+		'time': time,
+		'duration': duration,
+		'timer': setTimeout(function(machine, upgrade)
+		{
+			machine.upgrades[upgrade.id] = true;
+			delete machine.upgrade;
+			// TODO any special case stuff?
+		}, Math.floor(duration), machine)
+	};
 };
 
 exports.sendShip = function(machine, planet)
 {
-	// TODO 
+	var time = +new Date;
+	var distance = 'TODO';
+	var duration = distance / (machine.speed * machine.player.stats.shipSpeedMultiplier);
+	machine.mode = 'underway';
+	machine.flight = {
+		'time': time,
+		'duration': duration,
+		'timer': setTimeout(function(machine, planet)
+		{
+			// TODO
+		}, Math.floor(duration), machine)
+	};
 };
 
 exports.cancelSendShip = function()
 {
-	// TODO 
+	var time = +new Date;
+	var duration = (time - machine.flight.time) * machine.player.stats.cancelSendMultiplier;
+	machine.mode = 'returning';
+	machine.flight = {
+		'time': time,
+		'duration': duration,
+		'timer': setTimeout(function(machine)
+		{
+			machine.planet.area.orbit -= machine.size;
+			machine.planet.machines[machine.id] = machine;
+			// TODO anything else to update?
+			delete machine.flight;
+		}, Math.floor(duration), machine)
+	};
 };
 
 exports.toggleInFleet = function(machine, enlisted)

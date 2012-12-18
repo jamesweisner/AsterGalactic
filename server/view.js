@@ -34,7 +34,7 @@ exports.enterGalaxy = function(galaxy, time)
 		'name': galaxy.name,
 		'num_sectors': galaxy.sectors.length,
 		'num_players': galaxy.players.length,
-		'num_systems': galaxy.num_systems,
+		'num_systems': galaxy.systems.length,
 		'num_guilds': galaxy.guilds.length,
 		'sectors': sectors
 	};

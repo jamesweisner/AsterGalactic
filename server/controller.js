@@ -183,14 +183,19 @@ exports.handler = function(socket)
 			// TODO
 			return true;
 		});
-		socket.on('recycleMachine', function(machineId)
+		socket.on('recycleMachine', function(sequence, machineId)
 		{
 			if(!socket.player) return sendError(socket, 'Please login.');
 			if(!(machineId in galaxy.machines)) return sendError(socket, 'Machine not found.');
 			var machine = galaxy.machines[machineId];
 			if(machine.player.username != socket.player.username) return sendError(socket, 'You do not own this machine.');
 			if(!(machine.mode in ['ready', 'building', 'upgrading'])) return sendError(socket, 'Machine is not ready to be recycled.');
-			// TODO
+			model.recycleMachine(machine);
+			socket.emit('recycleMachine', {
+				'seuqence': sequence,
+				'time': machine.recycle.time,
+				'machineId': machineId,
+			});
 			return true;
 		});
 		socket.on('upgradeMachine', function(machineId, upgradeId)
