@@ -1,3 +1,10 @@
 {
-	"username": "gendou"
+	"username": "gendou",
+	"password": "ba1ab3da5a8ed8b6ea315c7a1940f398295d1f6c0e423cbde3677cd5614311cc",
+	"guildId": 1,
+	"credits": 100,
+	"technologies": [ 1 ],
+	"population": 100,
+	"research": {},
+	"achievements": {}
 }

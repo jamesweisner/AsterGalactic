@@ -3,14 +3,20 @@
 	<head>
 		<title>AsterGalactic</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<script src="/socket.io/socket.io.js"></script>
 		<script src="/js/jquery-1.8.3.min.js"></script>
 		<script src="/js/kinetic-v4.2.0.min.js"></script>
-		<script src="/js/socket.io.js"></script>
+		<script src="/js/sha256.js"></script>
+		<script src="/js/controller.js"></script>
 		<script src="/js/main.js"></script>
 	</head>
 	<body>
-		<div id="loader_view">
-			Loading...
+		<div id="login_view">
+			<form id="login-form">
+				<input type="text" />
+				<input type="password" />
+				<input type="submit" />
+			</form>
 		</div>
 		<div id="errors_view" style="display: none;">
 			An error occurred.
@@ -18,7 +24,7 @@
 		<div id="galaxy_view" style="display: none;"></div>
 		<div id="player_popup" style="display: none;">
 			<div id="player_popup_headshot">
-				<img src="player headshot here" />
+				<img />
 			</div>
 			<div id="player_popup_stats">
 				<label>Name      :</label><span data-source="player.name"></span>

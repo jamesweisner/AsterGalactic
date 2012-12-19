@@ -94,7 +94,10 @@ exports.loadGuilds = function()
 		// Resolve references.
 		for(username in guild.members)
 		{
-			guild.members[username] = players[username];
+			var player = exports.players[username];
+			guild.members[username] = player;
+			player.guild = guild;
+			delete player.guildId;
 		}
 	}
 };
@@ -191,6 +194,16 @@ exports.saveGuilds = function(guilds)
 exports.saveGalaxy = function(galaxy)
 {
 	// TODO save files for galaxy, sectors, and systems, clean all references while saving
+};
+
+exports.playerOnline = function(player)
+{
+	// TODO 
+};
+
+exports.playerOffline = function(player)
+{
+	// TODO 
 };
 
 exports.sendFleet = function()

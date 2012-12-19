@@ -23,7 +23,7 @@ model.loadSystems(); util.log('Loaded ' + model.num_systems + ' systems.');
 
 // Configure the connect app.
 var app = connect();
-app.use(connect.static(__dirname + '../client'));
+app.use(connect.static(__dirname + '/../client'));
 
 // Begin the HTTP server.
 var server = app.listen(model.galaxy.port);

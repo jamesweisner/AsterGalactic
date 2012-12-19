@@ -76,15 +76,13 @@ function remap_galaxy()
 
 $(document).ready(function()
 {
-	$.ajax({
-		'url': 'js/galaxy.js',
-		'dataType': 'json',
-		'success': function(response)
-		{
-			galaxy = response.galaxy;
-			remap_galaxy();
-			change_view('galaxy');
-		},
-		'error': function() { change_view('errors'); }
+	$('#login-form').submit(function()
+	{
+		var username = $(this).find('input[type="text"]').val();
+		var password = $(this).find('input[type="paddword"]').val();
+		password = CryptoJS.SHA256(password + CryptoJS.SHA256(username)).toString(CryptoJS.enc.Hex); // Two condoms.
+		var socket = io.connect('http://localhost');
+		initSocket(socket, username, password);
+		return false;
 	});
 });
