@@ -1,68 +1,82 @@
-function initSocket(socket, username, password)
+// The controller handles events caught by the web socket.
+// Information from the server is trusted to already be sanitized.
+// These events can trigger updates to the model, and changes in the view.
+
+AsterGalactic.getSocket = function()
 {
-	socket.emit('login', username, password);
+	if(AsterGalactic.socket) return AsterGalactic.socket;
+
+	AsterGalactic.socket = io.connect('/');
 	
-	socket.on('login', function (data)
+	AsterGalactic.socket.on('login', function(response)
 	{
-		if(data.message != 'success')
+		if(response.message != 'success')
 		{
-			// TODO show error message
+			console.log('login failed: ', response.message);
+			// display error message
+			// enable login button
+			return;
 		}
+		console.log('logged in as ', response.player);
+		AsterGalactic.player = response.player;
+		// show home page (player profile?)
+	});
 	
+	AsterGalactic.socket.on('enterGalaxy', function(response)
+	{
+		AsterGalactic.galaxy = response.galaxy;
+		// TODO
 	});
 
-	socket.on('enterGalaxy', function (data)
+	AsterGalactic.socket.on('scanSector', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('scanSector', function (data)
+	AsterGalactic.socket.on('enterSector', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('enterSector', function (data)
+	AsterGalactic.socket.on('scanSystem', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('scanSystem', function (data)
+	AsterGalactic.socket.on('enterSystem', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('enterSystem', function (data)
+	AsterGalactic.socket.on('scanPlanet', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('scanPlanet', function (data)
+	AsterGalactic.socket.on('enterPlanet', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('enterPlanet', function (data)
+	AsterGalactic.socket.on('sendFleet', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('sendFleet', function (data)
+	AsterGalactic.socket.on('upgradeMachine', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('upgradeMachine', function (data)
+	AsterGalactic.socket.on('setEnlisted', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('setEnlisted', function (data)
+	AsterGalactic.socket.on('research', function(response)
 	{
 		// TODO
 	});
 
-	socket.on('research', function (data)
-	{
-		// TODO
-	});
+	return AsterGalactic.socket;
 };

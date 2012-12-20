@@ -197,7 +197,7 @@ exports.handler = function(socket)
 			socket.emit('recycleMachine', {
 				'seuqence': sequence,
 				'time': machine.recycle.time,
-				'machineId': machineId,
+				'machineId': machineId
 			});
 			return true;
 		});
