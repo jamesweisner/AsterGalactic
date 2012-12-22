@@ -5,6 +5,9 @@
 	"credits": 100,
 	"technologies": [ 1 ],
 	"population": 100,
-	"research": {},
+	"research": {
+		"value": 0,
+		"time": 0,
+	},
 	"achievements": {}
 }

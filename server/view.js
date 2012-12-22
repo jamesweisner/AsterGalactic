@@ -13,30 +13,19 @@ exports.login = function(player)
 	};
 };
 
-// Only send sector dimensions the first time the player enters the galaxy.
-exports.enterGalaxy = function(galaxy, time)
+// Only show which sectors have player and guild in them.
+// The client calculates the sector dimensions and locations.
+exports.enterGalaxy = function(player)
 {
 	var sectors = [];
-	if(time > 0)
-	{
-		for(var i = 0; i < galaxy.sectors.length; i++)
-		{
-			var sector = galaxy.sectors[i];
-			sectors[i] = {
-				'id': sector.id,
-				'location': sector.location,
-				'size': sector.size
-			};
-		}
-	}
 	return {
-		'id': galaxy.id,
-		'name': galaxy.name,
-		'num_sectors': galaxy.sectors.length,
-		'num_players': galaxy.players.length,
-		'num_systems': galaxy.systems.length,
-		'num_guilds': galaxy.guilds.length,
-		'sectors': sectors
+		'name': model.galaxy.name,
+		'numPlayers': model.numPlayers,
+		'numGuilds': model.numGuilds,
+		'numSectors': model.numSectors,
+		'numSystems': model.numSystems,
+		'playerSectors': player.hasSectors,
+		'guildSectors': player.guild.hasSectors
 	};
 };
 
@@ -44,10 +33,8 @@ exports.enterGalaxy = function(galaxy, time)
 exports.scanSector = function(sector, time)
 {
 	var response = { 'id': sector.id };
-	if(sector.starsInfo.time  >= time) response.starsInfo  = sector.starsInfo;
-	if(sector.playerInfo.time >= time) response.playerInfo = sector.playerInfo;
-	if(sector.guildInfo.time  >= time) response.guildInfo  = sector.guildInfo;
-	if(sector.otherInfo.time  >= time) response.otherInfo  = sector.otherInfo;
+	// TODO what demographics to show? num_systems, num_fleets? my fleets?
+	// Maybe, sum all my demographics in each system?
 	return response;
 };
 
@@ -57,15 +44,10 @@ exports.scanSector = function(sector, time)
 // So, we don't have to worry about sending a delete signal for dead systems.
 // Similarly, fleets position is interpolated, so fleets are cached.
 // Only if a fleet is turned around does the cache become invalidated.
-exports.enterSector = function(sector, time)
+exports.enterSector = function(player, sector, time)
 {
-	var response = { 'id': sector.id };
-	if(sector.starsInfo.time  >= time) response.starsInfo  = sector.starsInfo;
-	if(sector.playerInfo.time >= time) response.playerInfo = sector.playerInfo;
-	if(sector.guildInfo.time  >= time) response.guildInfo  = sector.guildInfo;
-	if(sector.otherInfo.time  >= time) response.otherInfo  = sector.otherInfo;
-	response.systems = [];
-	for(var i = 0; i < sector.systems.length; i++)
+	var systems = {};
+	for(var i in sector.systems)
 	{
 		var system = sector.systems[i];
 		if(system.time < time) continue;
@@ -73,10 +55,12 @@ exports.enterSector = function(sector, time)
 			'id': system.id,
 			'name': system.name,
 			'type': system.type,
-			'location': system.location
+			'location': system.location,
+			'hasPlayer': (player.username in system.players),
+			'hasGuild': (player.guild.id in system.guilds)
 		};
 	}
-	response.fleets = [];
+	var fleets = {};
 	for(var i = 0; i < sector.fleets.length; i++)
 	{
 		var fleet = sector.fleets[i];
@@ -84,41 +68,102 @@ exports.enterSector = function(sector, time)
 		response.fleets[i] = {
 			'id': fleet.id,
 			'player': fleet.player.name,
+			'guild': fleet.player.guild.id,
 			'origin': fleet.origin,
 			'destination': fleet.destination,
 			'speed': fleet.speed,
-			'timeSent': fleet.timeSent
+			'position': fleet.position,
+			'mode': fleet.mode
 		};
+	}
+	return {
+		'id': sector.id,
+		'systems': systems,
+		'fleets': fleets
+	};
+};
+
+exports.newFleet = function(fleet)
+{
+	var response = {
+		'id': fleet.id,
+		'player': fleet.player.name,
+		'origin': fleet.origin,
+		'destination': fleet.destination,
+		'speed': fleet.speed,
+		'position': fleet.position,
+		'mode': fleet.mode
+	};
+	return response;
+};
+
+exports.updateFleet = function(fleet)
+{
+	var response = {
+		'id': fleet.id,
+		'speed': fleet.speed,
+		'position': fleet.position,
+		'mode': fleet.mode
+	};
+	return response;
+};
+
+exports.scanFleet = function(fleet)
+{
+	response = {
+		'id': fleet.id,
+		'num_ships': 0,
+		'num_class': {},
+		'military': 0,
+		'mass': 0
+	};
+	for(var i = 0; i < fleet.ships.length; i++)
+	{
+		var ship = ships[i];
+		response.num_ships++;
+		response.num_class[ship.machineClass.id]++;
+		response.military += model.militaryPower(ship);
+		response.mass += model.getMass(ship);
 	}
 	return response;
 };
 
-exports.newFleet = function()
+exports.scanSystem = function(player, system, time)
 {
-	// TODO
+	// Already known: name, type, location, hasPlayer, hasGuild.
+	response = { 'id': system.id };
+	if(system.planetsInfo.time >= time) response.planetsInfo = system.planetsInfo;
+	return response;
 };
 
-exports.updateFleet = function()
+exports.enterSystem = function(player, system, time)
 {
-	// TODO
+	var planets = {};
+	for(var i in system.planets)
+	{
+		var planet = system.planets[i];
+		if(planet.time < time) continue;
+		planets[i] = {
+			'id': planet.id,
+			'name': planet.name,
+			'type': planet.type,
+			'orbit': planet.orbit,
+			'mass': planet.mass,
+			'area': planet.area,
+			'player': planet.player.username,
+			'guild': planet.player.guild.id
+		};
+	}
+	var ships = {};
+	// TODO just attackers, or all ships in orbit, too?
+	return {
+		'id': system.id,
+		'planets': planets,
+		'ships': ships
+	};
 };
 
-exports.scanFleet = function()
-{
-	// TODO
-};
-
-exports.scanSystem = function()
-{
-	// TODO
-};
-
-exports.enterSystem = function()
-{
-	// TODO
-};
-
-exports.scanPlanet = function()
+exports.scanPlanet = function(player, planet, time)
 {
 	// TODO
 };

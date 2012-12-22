@@ -10,10 +10,10 @@ exports.fleets   = {};
 exports.planets  = {};
 exports.machines = {};
 
-exports.num_players = 0;
-exports.num_guilds  = 0;
-exports.num_sectors = 0;
-exports.num_systems = 0;
+exports.numPlayers = 0;
+exports.numGuilds  = 0;
+exports.numSectors = 0;
+exports.numSystems = 0;
 
 exports.loadGalaxy = function()
 {
@@ -59,7 +59,7 @@ exports.loadPlayers = function()
 			continue;
 		}
 		exports.players[player.username] = player;
-		exports.num_players++;
+		exports.numPlayers++;
 	}
 };
 
@@ -89,7 +89,7 @@ exports.loadGuilds = function()
 			continue;
 		}
 		exports.guilds[guild.id] = guild;
-		exports.num_guilds++;
+		exports.numGuilds++;
 		
 		// Resolve references.
 		for(username in guild.members)
@@ -128,7 +128,7 @@ exports.loadSectors = function()
 			continue;
 		}
 		exports.sectors[sector.id] = sector;
-		exports.num_sectors++;
+		exports.numSectors++;
 		
 		// Resolve references.
 		// TODO replace usernames with user references (in fleets, for example)
@@ -162,7 +162,7 @@ exports.loadSystems = function()
 			continue;
 		}
 		exports.systems[system.id] = system;
-		exports.num_systems++;
+		exports.numSystems++;
 		
 		// Resolve references.
 		if(!(system.sectorId in exports.sectors))
