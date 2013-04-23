@@ -28,16 +28,6 @@ AsterGalactic.getSocket = function()
 		// TODO
 	});
 
-	AsterGalactic.socket.on('scanSector', function(response)
-	{
-		// TODO
-	});
-
-	AsterGalactic.socket.on('enterSector', function(response)
-	{
-		// TODO
-	});
-
 	AsterGalactic.socket.on('scanSystem', function(response)
 	{
 		// TODO

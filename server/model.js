@@ -1,209 +1,81 @@
-var util = require('util'); // http://nodejs.org/api/all.html#all_util
-var fs   = require('fs');   // http://nodejs.org/api/all.html#all_file_system
+var util    = require('util');    // http://nodejs.org/api/all.html#all_util
+var sqlite3 = require('sqlite3'); // https://github.com/developmentseed/node-sqlite3
 
-exports.galaxy   = {};
-exports.players  = {};
-exports.guilds   = {};
-exports.sectors  = {};
-exports.systems  = {};
-exports.fleets   = {};
-exports.planets  = {};
-exports.machines = {};
+var db;
 
-exports.numPlayers = 0;
-exports.numGuilds  = 0;
-exports.numSectors = 0;
-exports.numSystems = 0;
-
-exports.loadGalaxy = function()
+exports.database = function(path, callback)
 {
-	try
+	db = new sqlite3.Database(path, sqlite3.OPEN_READWRITE, function(error)
 	{
-		exports.galaxy = require(__dirname + '/../data/galaxy.json');
-	}
-	catch (e)
-	{
-		util.log('Failed to load galaxy file: galaxy.json');
-		process.exit(1);
-	}
-	if(typeof(exports.galaxy.port) != 'number')
-	{
-		util.log('Listen port not specified, using default port: 80');
-		exports.galaxy.port = 80;
-	}
+		if(!error) return callback();
+		return db = new sqlite3.Database(path, sqlite3.OPEN_CREATE, function(error)
+		{
+			if(error)
+			{
+				util.log('Could not create database ' + path);
+				process.exit(1);
+			}
+			util.log('Installing new database ' + path);
+			var install = require('./install');
+			install.database(db, callback);
+		});
+	});
 }
 
-exports.loadPlayers = function()
+exports.register = function(username, password, email, ip, callback)
 {
-	var files = fs.readdirSync(__dirname + '/../data/players/');
-	for(var i = 0; i < files.length; i++)
+	// TODO
+	// set technologies achievements to be flag-strings like "00000000"
+};
+
+exports.login = function(username, password, ip, callback)
+{
+	var query = "\
+		SELECT player_id, guild_id, creidts, population, research, systems, password\
+		FROM player\
+		WHERE username = ?\
+	";
+	db.get(query, [username], function(error, player)
 	{
-		var file = files[i];
-		if(!file.match(/^[A-Z\d_]+\.json$/i))
-		{
-			util.log('Bad player file name: ' + file);
-			continue;
-		}
-		try
-		{
-			var player = require(__dirname + '/../data/players/' + file);
-		}
-		catch (e)
-		{
-			util.log('Failed to load player file: ' + file);
-			continue;
-		}
-		if(player.username != file.substr(0, file.length - 5))
-		{
-			util.log('Player file name does not agree with contents: ' + file);
-			continue;
-		}
-		exports.players[player.username] = player;
-		exports.numPlayers++;
-	}
+		if(!player)                     return callback(0, 'Player does not exist');
+		if(player.password != password) return callback(0, 'Password incorrect.');
+		delete player.password;
+		db.run('UPDATE player SET online = online + 1 WHERE player_id = ?', [player_id]);
+		db.run('INSERT INTO login (player_id, ip) VALUES (?, ?)', [player_id, ip]);
+		// TODO inform other guild members that this player has come online?
+		return callback(player, null);
+	});
 };
 
-exports.loadGuilds = function()
+exports.logout = function(player_id, callback)
 {
-	var files = fs.readdirSync(__dirname + '/../data/guilds/');
-	for(var i = 0; i < files.length; i++)
-	{
-		var file = files[i];
-		if(!file.match(/^[\d]+\.json$/i))
-		{
-			util.log('Bad guild file name: ' + file);
-			continue;
-		}
-		try
-		{
-			guild = require(__dirname + '/../data/guilds/' + file);
-		}
-		catch (e)
-		{
-			util.log('Failed to load guild file: ' + file);
-			continue;
-		}
-		if(guild.id != file.substr(0, file.length - 5))
-		{
-			util.log('Guild file name does not agree with contents: ' + file);
-			continue;
-		}
-		exports.guilds[guild.id] = guild;
-		exports.numGuilds++;
-		
-		// Resolve references.
-		for(username in guild.members)
-		{
-			var player = exports.players[username];
-			guild.members[username] = player;
-			player.guild = guild;
-			delete player.guildId;
-		}
-	}
+	db.run('UPDATE player SET online = online - 1 WHERE player_id = ?', [player_id], callback);
 };
 
-exports.loadSectors = function()
+exports.enterGalaxy = function()
 {
-	var files = fs.readdirSync(__dirname + '/../data/sectors/');
-	for(var i = 0; i < files.length; i++)
-	{
-		var file = files[i];
-		if(!file.match(/^[\d]+\.json$/i))
-		{
-			util.log('Bad sector file name: ' + file);
-			continue;
-		}
-		try
-		{
-			var sector = require(__dirname + '/../data/sectors/' + file);
-		}
-		catch (e)
-		{
-			util.log('Failed to load sector file: ' + file);
-			continue;
-		}
-		if(sector.id != file.substr(0, file.length - 5))
-		{
-			util.log('Sector file name does not agree with contents: ' + file);
-			continue;
-		}
-		exports.sectors[sector.id] = sector;
-		exports.numSectors++;
-		
-		// Resolve references.
-		// TODO replace usernames with user references (in fleets, for example)
-		// TODO resolve any guild references, too
-	}
+	// TODO
 };
 
-exports.loadSystems = function()
+exports.scanSystem = function()
 {
-	var files = fs.readdirSync(__dirname + '/../data/systems/');
-	for(var i = 0; i < files.length; i++)
-	{
-		var file = files[i];
-		if(!file.match(/^[\d]+\.json$/i))
-		{
-			util.log('Bad system file name: ' + file);
-			continue;
-		}
-		try
-		{
-			var system = require(__dirname + '/../data/systems/' + file);
-		}
-		catch (e)
-		{
-			util.log('Failed to load system file: ' + file);
-			continue;
-		}
-		if(system.id != file.substr(0, file.length - 5))
-		{
-			util.log('System file name does not agree with contents: ' + file);
-			continue;
-		}
-		exports.systems[system.id] = system;
-		exports.numSystems++;
-		
-		// Resolve references.
-		if(!(system.sectorId in exports.sectors))
-		{
-			util.log('Could not find sector with ID: ' + system.sectorId);
-		}
-		system.sector = exports.sectors[system.sectorId];
-		system.sector.systems[system.id] = system;
-		delete system.sectorId;
-		
-		// TODO load fleets, planets, machines
-		// TODO replace usernames with user references (in machines, for example)
-		// TODO resolve any guild references, too
-	}
-
-	// TODO resolve any galaxy/sector/system references in players, guilds?
+	// TODO return sendError(socket, 'System not found.');
 };
 
-exports.savePlayers = function(players)
+exports.enterSystem = function()
 {
-	// TODO save player files, clean all references while saving
+	// TODO	return sendError(socket, 'System not found.');
+
 };
 
-exports.saveGuilds = function(guilds)
+exports.scanPlanet = function()
 {
-	// TODO save guild files, clean all references while saving
+	// TODO return sendError(socket, 'Planet not found.');
 };
 
-exports.saveGalaxy = function(galaxy)
+exports.enterPlanet = function()
 {
-	// TODO save files for galaxy, sectors, and systems, clean all references while saving
-};
-
-exports.playerOnline = function(player)
-{
-	// TODO 
-};
-
-exports.playerOffline = function(player)
-{
-	// TODO 
+	// TODO return sendError(socket, 'Planet not found.');
 };
 
 exports.sendFleet = function()
@@ -272,54 +144,95 @@ exports.upgradeMachine = function(machine, upgrade)
 	};
 };
 
-exports.sendShip = function(machine, planet)
+exports.sendShip = function(playerId, machineId, planetId, time, callback)
 {
-	var time = +new Date;
-	var distance = 'TODO';
-	var duration = distance / (machine.speed * machine.player.stats.shipSpeedMultiplier);
-	machine.mode = 'underway';
-	machine.flight = {
-		'time': time,
-		'duration': duration,
-		'timer': setTimeout(function(machine, planet)
+	db.get("SELECT * FROM machine WHERE machine_id = ?", [machineId], function(error, ship)
+	{
+		if(!ship)                      return callback('Ship not found.');
+		if(ship.type != 'ship')        return callback('That machine is not a ship.');
+		if(ship.player_id != playerId) return callback('You do not own this ship.');
+		if(ship.mode != 'ready')       return callback('Ship is not ready to depart.');
+		
+		return db.get("SELECT * FROM planet WHERE planet_id = ?", [planetId], function(error, planet)
 		{
-			// TODO
-		}, Math.floor(duration), machine)
-	};
+			if(!planet)                            return callback('Destination planet not found.');
+			if(planet.system_id != ship.system_id) return callback('Invalid destination planet.');
+			// TODO invalid destination if owned by another player and not in PvP system.
+			// TODO some destinations invalid? for some ship classes?
+			
+			// Begin ship flight to destination planet.
+			var distance = 'TODO';
+			var duration = distance / machine.speed;
+			exports.flights[machineId] = setTimeout(function(machine, planet)
+			{
+				// TODO
+				delete exports.flights[machineId];
+			}, Math.floor(duration), machine);
+			return db.run("\
+				UPDATE machine SET\
+				mode = 'underway',\
+				flight_time = ?\
+				WHERE machine_id = ?\
+			", [time, machineId], function() { callback(false); });
+		});
+	});
 };
 
-exports.cancelSendShip = function()
+exports.cancelSendShip = function(playerId, machineId, time, callback)
 {
-	var time = +new Date;
-	var duration = (time - machine.flight.time) * machine.player.stats.cancelSendMultiplier;
-	machine.mode = 'returning';
-	machine.flight = {
-		'time': time,
-		'duration': duration,
-		'timer': setTimeout(function(machine)
+	db.get("SELECT * FROM machine WHERE machine_id = ?", [machineId], function(error, ship)
+	{
+		if(!ship)                      return callback('Ship not found.');
+		if(ship.type != 'ship')        return callback('That machine is not a ship.');
+		if(ship.player_id != playerId) return callback('You do not own this ship.');
+		if(ship.mode != 'underway')    return callback('Ship is not underway');
+		
+		// Send ship back to where it came from.
+		var duration = (time - machine.flight_time);
+		clearTimeout(exports.flights[machineId]);
+		delete exports.flights[machineId];
+		setTimeout(function()
 		{
-			machine.planet.area.orbit -= machine.size;
-			machine.planet.machines[machine.id] = machine;
-			// TODO anything else to update?
-			delete machine.flight;
-		}, Math.floor(duration), machine)
-	};
+			db.run("UPDATE machine SET mode = 'ready', flight_time = 0, return_time = 0 WHERE machine_id = ?", [machine_id]);
+		}, Math.floor(duration));
+		return db.run("UPDATE machine SET mode = 'returning', return_time = ? WHERE machine_id = ?", [time, machineId], function() { callback(false); });
+	});
 };
 
-exports.toggleInFleet = function(machine, enlisted)
+exports.setEnlisted = function(playerId, machineId, enlisted, callback)
 {
-	machine.enlisted = enlisted;
+	db.get("SELECT * FROM machine WHERE machine_id = ?", [machineId], function(error, ship)
+	{
+		if(!ship)                      return callback('Ship not found.');
+		if(ship.type != 'ship')        return callback('That machine is not a ship.');
+		if(ship.player_id != playerId) return callback('You do not own this ship.');
+		if(ship.mode != 'ready')       return callback('Ship is not ready to depart.');
+		
+		// Toggle ship enlistment in the fleet.
+		return db.run("UPDATE machine SET enlisted = ? WHERE machine_id = ?", [enlisted, machineId], function() { callback(false); });
+	});
 };
 
-exports.research = function(player, technologyId)
+exports.research = function(player, technologyId, time, callback)
 {
-	var time = +new Date;
+	if(!(technologyId in lib.technologies)) return 'Technology not found.';
+	var technology = lib.technologies[technologyId];
+	if(player.technologies.charAt(technologyId) == '9')
+		return 'Research for this technologys is at maximum level.';
+	for(var i in technology.requirements)
+		if(player.technologies.charAt(i) < technology.requirements[i])
+			return 'Technology prerequisite not met.';
+	if('TODO')
+		return 'Insufficient research points.';
+
+	// Spend research pool to acquire technology.
 	var technology = technologies[researchId];
 	player.research.pool += player.research.rate * (time - player.research.time);
 	player.research.pool -= technology.cost;
 	player.research.time = time;
 	player.technologies[technologyId] = technology;
 	// TODO any special-case things to do for certain technologies?
+	return false;
 };
 
 exports.fleetArrives = function()

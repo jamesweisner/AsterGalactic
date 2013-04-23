@@ -7,28 +7,37 @@ var view       = require('./view.js');       // Form data objects from game data
 var controller = require('./controller.js'); // Implementation of socket events, prevents invalid player action.
 
 var version = 0.1;
-util.log('AsterGalactic version ' + version + ' is starting up!');
 
-// Cross-link model, view, and controller so they can talk to each other.
-controller.model = model;
-view.model = model;
-controller.view = view;
+util.log('AsterGalactic version ' + version);
+
+// Database file name is the first command line argument.
+var file = 'galaxy.sqlite3';
+if(process.argc > 2) file = process.argv[2];
+var path = __dirname + '/../data/' + file;
+
+// Port number is the second command line argument.
+var port = parseInt(process.argv[3]);
+if(isNaN(port)) port = 80;
 
 // Load game data from persistent storage.
-model.loadGalaxy();  util.log('Loading the galaxy...');
-model.loadPlayers(); util.log('Loaded ' + model.num_players + ' players.');
-model.loadGuilds();  util.log('Loaded ' + model.num_guilds  + ' guilds.');
-model.loadSectors(); util.log('Loaded ' + model.num_sectors + ' sectors.');
-model.loadSystems(); util.log('Loaded ' + model.num_systems + ' systems.');
+model.database(path, function(port)
+{
+    util.log('Loaded database ' + path);
 
-// Configure the connect app.
-var app = connect();
-app.use(connect.static(__dirname + '/../client'));
-
-// Begin the HTTP server.
-var server = app.listen(model.galaxy.port);
-util.log('Listening on port: ' + model.galaxy.port);
-
-// Create game socket and setup its handler, the game controller.
-var socket = io.listen(server);
-socket.on('connection', controller.handler);
+    // Cross-link model, view, and controller so they can talk to each other.
+    controller.model = model;
+    view.model = model;
+    controller.view = view;
+    
+    // Configure the connect app.
+    var app = connect();
+    app.use(connect.static(__dirname + '/../client'));
+    
+    // Begin the HTTP server.
+    var server = app.listen(port);
+    util.log('Listening on port ' + port);
+    
+    // Create game socket and setup its handler, the game controller.
+    var socket = io.listen(server);
+    socket.on('connection', controller.handler);
+});
