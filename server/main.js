@@ -22,22 +22,21 @@ if(isNaN(port)) port = 80;
 // Load game data from persistent storage.
 model.database(path, function(port)
 {
-    util.log('Loaded database ' + path);
-
-    // Cross-link model, view, and controller so they can talk to each other.
-    controller.model = model;
-    view.model = model;
-    controller.view = view;
-    
-    // Configure the connect app.
-    var app = connect();
-    app.use(connect.static(__dirname + '/../client'));
-    
-    // Begin the HTTP server.
-    var server = app.listen(port);
-    util.log('Listening on port ' + port);
-    
-    // Create game socket and setup its handler, the game controller.
-    var socket = io.listen(server);
-    socket.on('connection', controller.handler);
+	util.log('Loaded database ' + path);
+	
+	// Cross-link model, view, and controller so they can talk to each other.
+	controller.model = model;
+	view.model = model;
+	
+	// Configure the connect app.
+	var app = connect();
+	app.use(connect.static(__dirname + '/../client'));
+	
+	// Begin the HTTP server.
+	var server = app.listen(port);
+	util.log('Listening on port ' + port);
+	
+	// Create game socket and setup its handler, the game controller.
+	var socket = io.listen(server);
+	socket.on('connection', controller.handler);
 });
